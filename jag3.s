@@ -39,7 +39,7 @@ closedParenthesismessage: .asciz "closed parenthesis\n"
 .global strlen
 
 main:
-	// Read user-input
+// Read user-input
 	ldr r2, [sp, #8]
 	add r2, r2, #4
 	ldr r1, =arg1
