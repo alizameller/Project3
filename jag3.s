@@ -36,8 +36,6 @@ closedParenthesismessage: .asciz "closed parenthesis\n"
 .global main
 .global atof
 .global malloc
-.global strcpy
-.global atof
 
 main:
     // Read user-input
