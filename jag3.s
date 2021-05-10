@@ -69,9 +69,9 @@ loop:
     //increment pointer to byte
     add r2, r2, #1  
 
-    cmp r3, #91
+    cmp r3, #40
     beq buildString
-    cmp r3, #93
+    cmp r3, #41
     beq buildString
     cmp r3, #94
     beq buildString
@@ -128,9 +128,9 @@ stringToFloat:
     b end
 
 checkOperator:
-    cmp r3, #91
+    cmp r3, #40
     beq openParenthesis
-    cmp r3, #93
+    cmp r3, #41
     beq closedParenthesis
     cmp r3, #94
     beq exponent
