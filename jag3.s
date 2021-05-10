@@ -37,6 +37,7 @@ closedParenthesismessage: .asciz "closed parenthesis\n"
 .global atof
 .global malloc
 .global strlen
+.global memcpy
 
 main:
 // Read user-input
@@ -61,7 +62,7 @@ loop:
 	
 	//debugging to see which byte was read
 	push {r0-r12, lr}
-	ldr r0, =num
+    ldr r0, =num
 	mov r1, r3
 	bl printf
 	pop {r0-r12, lr}
@@ -70,52 +71,55 @@ loop:
     add r2, r2, #1  
 
 	cmp r3, #41
-    beq buildString
+    bleq ifIsSymbol
     cmp r3, #40
-    beq buildString
+    bleq ifIsSymbol
     cmp r3, #94
-    beq buildString
+    bleq ifIsSymbol
     cmp r3, #47
-    beq buildString
+    bleq ifIsSymbol
     cmp r3, #42
-    beq buildString
+    bleq ifIsSymbol
     cmp r3, #45
-    beq buildString
+    bleq ifIsSymbol
     cmp r3, #43
-    beq buildString
+    bleq ifIsSymbol
 	cmp r3, #0
-	beq buildString
+	bleq ifIsSymbol
+	cmp r3, #0
+	beq finalizePostfix
 
 	//find size of num1
 	add r4, r4, #1
 	bne loop
 
-buildString: 
-	sub r5, r2, #1 //# of bytes in argument until last byte of num (--> first byte)
-	sub r5, r5, r4 //r5 contains offset to first byte of num
-	mov r6, #0	
+ifIsSymbol:
+    push {r0-r12, lr}
+    ldr r6, =string1
+    bl buildString
+    pop {r0-r12, lr}
+    mov r4, #0
+    bx lr
 
-buildStringLoop:
-	ldrb r8, [r1, r5]	
-	
-    // append byte to string
-  	ldr r6, =string1
-	str r8, [r6, r5]
+buildString:
+    push {r0-r12, lr}
+    sub r1, r2, r4
+    sub r1, r1, #1
+    mov r0, r6
+    mov r2, r4
+    bl memcpy
+    push {r0-r12, lr}
+        ldr r0, =openParenthesismessage
+        bl printf
+        pop {r0-r12, lr}
+    push {r0-r12, lr}
+    ldr r0, =string
+    ldr r1, =string1
+    bl printf
+    pop {r0-r12, lr}
+	pop {r0-r12, lr}
 
-	//debugging purposes only
-//	push {r0-r12, lr}
-//	ldr r0, =string
-//	ldr r1, =string1
-//	bl printf	
-//	pop {r0-r12, lr}	
-
-	add r5, r5, #1
-	add r6, r5, #1
-	cmp r6, r2
-//	moveq r6, #0
-//	streq r6, [r6, r5]	
-	beq queue
-	bne buildStringLoop
+	bx lr
 
 queue:
 	//push to queue
@@ -134,7 +138,10 @@ queue:
 	cmp r3, #0
 	bne loop
 	beq end
-	
+
+finalizePostfix:
+
+
 checkOperator:
 	cmp r3, #41
     beq openParenthesis
