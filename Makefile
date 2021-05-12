@@ -3,6 +3,10 @@ all: jag3.out
 jag3.out: jag3.s
 	arm-linux-gnueabi-gcc -ggdb3 jag3.s -o jag3.out -static -mfpu=vfp -lm
 
+.PHONY: start
+start:
+	qemu-arm -L usr/arm-linux-gnueabi jag3.out "78+55"
+
 .PHONY: start_app_server
 start_app_server:
 	qemu-arm -L usr/arm-linux-gnueabi -g 25566 jag3.out "78+55"

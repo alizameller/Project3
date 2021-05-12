@@ -81,13 +81,6 @@ main:
 loop:
 	// loading individual bytes from arg1
 	ldrb r3, [r1, r2]
-	
-	// debugging to see which byte was read
-	push {r0-r12, lr}
-    ldr r0, =num
-	mov r1, r3
-	bl printf
-	pop {r0-r12, lr}
 
  	// increment pointer to byte
     add r2, r2, #1
@@ -119,13 +112,12 @@ loop:
 
 ifIsSymbol:
     push {r0-r12, lr}
-    ldr r6, =string1
     bl buildString
     pop {r0-r12, lr}
 
 	// If it's a null, head back now
 	cmp r3, #0
-	bx lr
+	bxeq lr
 
 	push {r0-r12, lr}
 	mov r7, r3
@@ -153,9 +145,9 @@ handlePushingSymbol:
 	mov r1, r7
 
 	// Compare it to the value we current have
-	push {lr}
+	push {r12, lr}
 	bl precedence
-	pop {lr}
+	pop {r12, lr}
 
 	bge handlePushingSymbol1
 
@@ -171,17 +163,17 @@ handlePushingSymbol1:
 	// If it is a ")" that we are currently dealing with
 	// pop one more time to remove the "("
 	cmp r7, #41
-	push {lr}
+	push {r0-r12, lr}
 	bleq stackPop
-	pop {lr}
+	pop {r0-r12, lr}
 
 	// push on the reamining character
 	mov r0, r7
-	push {lr}
+	push {r0-r12, lr}
 	bl stackPush
-	pop {lr}
+	pop {r0-r12, lr}
 
-	bxlt lr
+	bx lr
 
 // buildString is a function that creates and adds a new
 // string to the queue (Kept as a string so it is possible to tell the difference
@@ -213,9 +205,9 @@ buildString:
 	strb r1, [r2]
 
 	// Push the string onto the queue
-	push {lr}
+	push {r12, lr}
 	bl queuePush
-	pop {lr}
+	pop {r12, lr}
 
 	pop {r0-r12, lr}
 	bx lr
@@ -232,7 +224,7 @@ finalizePostfix:
 // Now, the stack is empty and the queue contains
 // a postfix expression. Let's solve it.
 solveExpression:
-	bl stackEmpty
+	bl queueEmpty
 	beq finalPrint
 
 	bl queuePop
@@ -270,43 +262,43 @@ solveExpression1:
 	// so we must solve the operator
 
 	push {r0-r12, lr}
-	cmp r3, #41
+	cmp r0, #41
     bleq openParenthesis
 	pop {r0-r12, lr}
 
 	push {r0-r12, lr}
-    cmp r3, #40
+    cmp r0, #40
     bleq closedParenthesis
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r3, #94
+    cmp r0, #94
     bleq exponent
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r3, #47
+    cmp r0, #47
     bleq divide
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r3, #42
+    cmp r0, #42
     bleq multiply
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r3, #45
+    cmp r0, #45
     bleq subtract
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r3, #43
+    cmp r0, #43
     bleq add
 	pop {r0-r12, lr}
 	b solveExpression
 
 add:
-	push {lr}
+	push {r12, lr}
 	bl stackPop
 	vldr d0, [r0]
 
@@ -317,7 +309,7 @@ add:
 
 	vstr d0, [r0]
 	bl stackPush
-	pop {lr}
+	pop {r12, lr}
 	bx lr	
 
 subtract:
@@ -384,7 +376,7 @@ closedParenthesis:
 // stackPush inserts the value at r0 into
 // list1 at the start
 stackPush:
-	push {lr}
+	push {r12, lr}
 	// Move r0 into r3 as r0 is about to be overwritten
 	mov r3, r0
 
@@ -409,7 +401,7 @@ stackPush:
 	str r0, [r6]
 
 	// Return
-	pop {lr}
+	pop {r12, lr}
 	bx lr
 
 // stackPop pops the top value in the stack
@@ -423,7 +415,7 @@ stackPop:
     ldr r0, [r2]
 
 	// Get pointer to head->next
-	add r2, r1, #8
+	add r2, r2, #8
 	ldr r2, [r2]
 
 	// Set the head->next pointer to be the new head pointer
@@ -432,7 +424,7 @@ stackPop:
 	// Return
 	bx lr
 
-// stackPop pops the top value in the stack
+// stackEmpty checks if the top of the stack is empty
 // and returns it via CPSR
 stackEmpty:
 	push {r0-r12, lr}
@@ -459,7 +451,12 @@ queuePush:
 
 	// Get 16 bytes of space from heap
 	mov r0, #16
+	push {r1-r12, lr}
 	bl malloc
+	pop {r1-r12, lr}
+
+	// Store the value into the new node
+	str r3, [r0]
 
 	// Get current tail pointer
 	ldr r6, =list2TailPointer
@@ -499,7 +496,7 @@ queuePop:
 	ldr r0, [r2]
 
 	// Get pointer to head->next
-	add r2, r1, #8
+	add r2, r2, #8
 	ldr r2, [r2]
 
 	// Set the head->next pointer to be the new head pointer
@@ -514,6 +511,16 @@ queuePop:
 	str r2, [r1]
 
 	// Return
+	bx lr
+
+// queueEmpty checks if the top of the queue is empty
+// and returns it via CPSR
+queueEmpty:
+	push {r0-r12, lr}
+	ldr r1, =list2HeadPointer
+	ldr r1, [r1]
+	cmp r1, #0
+	pop {r0-r12, lr}
 	bx lr
 
 // precedence returns a precedence comparison
@@ -570,15 +577,16 @@ precedenceNum:
 
 finalPrint:
 	bl stackPop
-	mov r1, r0
+	vldr d0, [r0]
+	vmov r2, r3, d0
 	ldr r0, =float
+	push {r0-r12, lr}
 	bl printf
+	pop {r0-r12, lr}
+	b end
 
 end:
-//	ldr r0, =num
-//	mov r1, r1
-//	bl printf
-//	pop {r0-r12, lr}  //the push/pop was for debugging purposes	
 
+	mov r0, #0
 	mov r7, #1
 	swi 0	
