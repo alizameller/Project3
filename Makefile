@@ -5,7 +5,7 @@ jag3.out: jag3.s
 
 .PHONY: start_app_server
 start_app_server:
-	qemu-arm -L usr/arm-linux-gnueabi -g 25566 jag3.out "78 + 55"
+	qemu-arm -L usr/arm-linux-gnueabi -g 25566 jag3.out "78+55"
 
 .PHONY: start_debugger
 start_debugger:
