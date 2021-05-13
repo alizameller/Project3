@@ -5,11 +5,11 @@ jag3.out: jag3.s
 
 .PHONY: start
 start:
-	qemu-arm -L usr/arm-linux-gnueabi jag3.out "78+(100.5+20)"
+	qemu-arm -L usr/arm-linux-gnueabi jag3.out "((2+2+2+2+2-0.5-1.5)/2*0.5)^5"
 
 .PHONY: start_app_server
 start_app_server:
-	qemu-arm -L usr/arm-linux-gnueabi -g 25566 jag3.out "78+(100.5+20)"
+	qemu-arm -L usr/arm-linux-gnueabi -g 25566 jag3.out "((2+2+2+2+2-0.5-1.5)/2*0.5)^5"
 
 .PHONY: start_debugger
 start_debugger:

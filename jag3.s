@@ -4,13 +4,13 @@
 string: .asciz "%s\n"
 
 .balign 4
-stringNoLF: .asciz "%s \n"
+stringNoLF: .asciz "%s "
 
 .balign 4
 num: .asciz "%d\n"
 
 .balign 4
-charNoLF: .asciz "%c \n"
+charNoLF: .asciz "%c "
 
 .balign 4
 float: .asciz "\n%lf\n"
@@ -59,6 +59,7 @@ tmpFloat: .space 20
 .global malloc
 .global strlen
 .global memcpy
+.global pow
 
 // Node struct
 // void* value (0-7 bytes)
@@ -302,16 +303,6 @@ solveExpression1:
 	ldr r0, =charNoLF
 	bl printf
 	pop {r0-r12, lr}
-
-	push {r0-r12, lr}
-	cmp r0, #41
-    bleq openParenthesis
-	pop {r0-r12, lr}
-
-	push {r0-r12, lr}
-    cmp r0, #40
-    bleq closedParenthesis
-	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
     cmp r0, #94
@@ -355,65 +346,77 @@ add:
 	bx lr	
 
 subtract:
-	//using sub instructions subtracts values in the registers
-	mov r1, #3
-    mov r2, #4
-    sub r1, r2, r1
-    ldr r0, =num
-    bl printf
+	push {r12, lr}
+	bl stackPop
+	vldr d0, [r0]
 
-	b end	
+	bl stackPop
+	vldr d1, [r0]
+	
+	vsub.f64 d0, d1, d0
+
+	vstr d0, [r0]
+	bl stackPush
+	pop {r12, lr}
+	bx lr	
 
 multiply:
-	//using mul instruction multiplies the values in the registers
-	mov r1, #3
-    mov r2, #4
-    mul r1, r2, r1
-    ldr r0, =num
-    bl printf
+	push {r12, lr}
+	bl stackPop
+	vldr d0, [r0]
 
-	b end
+	bl stackPop
+	vldr d1, [r0]
+	
+	vmul.f64 d0, d0, d1
+
+	vstr d0, [r0]
+	bl stackPush
+	pop {r12, lr}
+	bx lr	
 
 divide:
-	ldr r0, =dividemessage
-    ldr r1, =string
-    bl printf
-	b end
+	push {r12, lr}
+	bl stackPop
+	vldr d0, [r0]
+
+	bl stackPop
+	vldr d1, [r0]
+
+	vdiv.f64 d0, d1, d0
+
+	vstr d0, [r0]
+	bl stackPush
+	pop {r12, lr}
+	bx lr	
 
 exponent:
-    //loop mul instruction
-    push {r0-r12, lr}
- 	mov r2, #3 //base
-    mov r3, #1 //exponent
-	
-	cmp r3, #0
-	moveq r1, #1
-	cmp r3, #1
-	moveq r1, r2
-	cmp r3, #2
-	mulge r1, r2, r2
-	bgt mulLoop 
+    // Use the c stdlib.h pow function
+	push {r12, lr}
 
-	b end 
+	bl stackPop
+	vldr d0, [r0]
 
-mulLoop:
-	mul r1, r2, r1
-	add r0, r0, #1
-	cmp r0, r3
-	bne mulLoop
-	beq end
+	bl stackPop
+	vldr d1, [r0]
+	mov r8, r0
 
-openParenthesis:
-	ldr r0, =openParenthesismessage
-    ldr r1, =string
-    bl printf
-	b end
+	// Move the doubles into registers to call the c pow function.
+	vmov r0, r1, d1
+	vmov r2, r3, d0
 
-closedParenthesis:
-	ldr r0, =closedParenthesismessage
-    ldr r1, =string
-    bl printf
-	b end
+	push {r2-r12, lr}
+	bl pow
+	pop {r2-r12, lr}
+
+	// Move it back into the float register
+	vmov d0, r0, r1
+
+	vstr d0, [r8]
+	mov r0, r8
+	bl stackPush
+	pop {r12, lr}
+	bx lr
 
 // stackPush inserts the value at r0 into
 // list1 at the start
