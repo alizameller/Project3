@@ -12,7 +12,7 @@ For Example:
 # Installation Method
 1. Download the assembly file from GitHub using curl:
 ```bash
-curl https://raw.githubusercontent.com/alizameller/Project3/main/jag3.s --output jag2.s
+curl https://raw.githubusercontent.com/alizameller/Project3/main/jag3.s --output jag3.s
 ```
 2. Download the Makefile from GitHub using curl: 
 ```bash
