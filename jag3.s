@@ -13,7 +13,7 @@ num: .asciz "%d\n"
 charNoLF: .asciz "%c "
 
 .balign 4
-float: .asciz "\n%lf\n"
+float: .asciz "\n%g\n"
 
 .balign 4
 floatScan: .asciz "%lf"
