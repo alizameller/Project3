@@ -4,10 +4,16 @@
 string: .asciz "%s\n"
 
 .balign 4
+stringNoLF: .asciz "%s \n"
+
+.balign 4
 num: .asciz "%d\n"
 
 .balign 4
-float: .asciz "%lf\n"
+charNoLF: .asciz "%c \n"
+
+.balign 4
+float: .asciz "\n%lf\n"
 
 .balign 4
 floatScan: .asciz "%lf"
@@ -137,6 +143,14 @@ handlePushingSymbol:
 	pop {r0-r12, lr}
 	beq handlePushingSymbol1
 
+	// If the character is a left parenthesis, skip to pushing symbol
+	cmp r7, #40
+	beq handlePushingSymbol1
+
+	// If the character is a right parenthesis, skip to special handling
+	cmp r7, #41
+	beq handlePushingSymbol2
+
 	// Get the top of the stack
 	push {r1-r12, lr}
 	bl stackPeek
@@ -149,7 +163,7 @@ handlePushingSymbol:
 	bl precedence
 	pop {r12, lr}
 
-	bge handlePushingSymbol1
+	blt handlePushingSymbol1
 
 	// Pop from the stack and push it to the queue
 	push {r7, lr}
@@ -159,15 +173,7 @@ handlePushingSymbol:
 
 
 handlePushingSymbol1:
-
-	// If it is a ")" that we are currently dealing with
-	// pop one more time to remove the "("
-	cmp r7, #41
-	push {r0-r12, lr}
-	bleq stackPop
-	pop {r0-r12, lr}
-
-	// push on the reamining character
+	// push on the remaining character
 	mov r0, r7
 	push {r0-r12, lr}
 	bl stackPush
@@ -175,10 +181,32 @@ handlePushingSymbol1:
 
 	bx lr
 
+// handlePushingSymbol2 is specifically for dealing with right parenthesis
+handlePushingSymbol2:
+	// Pop the top of the stack
+	push {r1-r12, lr}
+	bl stackPop
+	pop {r1-r12, lr}
+
+	// If it is not a left parenthesis, pop then push to queue
+	cmp r0, #40
+	push {r0-r12, lr}
+	blne queuePush
+	pop {r0-r12, lr}
+
+	// If it is not a left parenthesis, repeat
+	cmp r0, #40
+	bne handlePushingSymbol2
+
+	bx lr
+
 // buildString is a function that creates and adds a new
 // string to the queue (Kept as a string so it is possible to tell the difference
 // between a symbol and a number)
 buildString:
+	// If the string length is 0, return immediately
+	cmp r4, #1
+	bxeq lr
     push {r0-r12, lr}
 
     // Copy the given number to a new point in memory
@@ -236,6 +264,13 @@ solveExpression:
 	// If we're here, it means this is a string with a float
 	// so calculate the float and place it into the stack as a float
 
+	// DEBUG: Print out the number
+	push {r0-r12, lr}
+	mov r1, r0
+	ldr r0, =stringNoLF
+	bl printf
+	pop {r0-r12, lr}
+
 	// convert to a float
 	// r0 is already set
 	ldr r1, =floatScan
@@ -260,6 +295,13 @@ solveExpression:
 solveExpression1:
 	// If we're here, it means that this is an operator
 	// so we must solve the operator
+
+	// DEBUG: Print out the operator
+	push {r0-r12, lr}
+	mov r1, r0
+	ldr r0, =charNoLF
+	bl printf
+	pop {r0-r12, lr}
 
 	push {r0-r12, lr}
 	cmp r0, #41
@@ -542,7 +584,7 @@ precedence:
 // +- 1
 // */ 2
 // ^ 3
-// () 4
+// () 0
 precedenceNum:
 	cmp r0, #43 // +
 	moveq r0, #1
@@ -565,11 +607,11 @@ precedenceNum:
 	bxeq lr
 
 	cmp r0, #40 // (
-	moveq r0, #4
+	moveq r0, #0
 	bxeq lr
 
 	cmp r0, #41 // )
-	moveq r0, #4
+	moveq r0, #0
 	bxeq lr
 
 	mov r0, #0
