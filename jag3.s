@@ -82,7 +82,7 @@ main:
 //	pop {r0-r12, lr}	
 
 	// initializing offset
-    mov r2, #0
+	mov r2, #0
 	mov r4, #0
 
 loop:
@@ -90,25 +90,25 @@ loop:
 	ldrb r3, [r1, r2]
 
  	// increment pointer to byte
-    add r2, r2, #1
+	add r2, r2, #1
 
-    // find size of num1
-    add r4, r4, #1
+	// find size of num1
+	add r4, r4, #1
 
 	cmp r3, #41
-    bleq ifIsSymbol
-    cmp r3, #40
-    bleq ifIsSymbol
-    cmp r3, #94
-    bleq ifIsSymbol
-    cmp r3, #47
-    bleq ifIsSymbol
-    cmp r3, #42
-    bleq ifIsSymbol
-    cmp r3, #45
-    bleq ifIsSymbol
-    cmp r3, #43
-    bleq ifIsSymbol
+	bleq ifIsSymbol
+	cmp r3, #40
+	bleq ifIsSymbol
+	cmp r3, #94
+	bleq ifIsSymbol
+	cmp r3, #47
+	bleq ifIsSymbol
+	cmp r3, #42
+	bleq ifIsSymbol
+	cmp r3, #45
+	bleq ifIsSymbol
+	cmp r3, #43
+	bleq ifIsSymbol
 	cmp r3, #0
 	bleq ifIsSymbol
 	cmp r3, #0
@@ -118,21 +118,22 @@ loop:
 	b finalizePostfix
 
 ifIsSymbol:
-    push {r0-r12, lr}
-    bl buildString
-    pop {r0-r12, lr}
+	push {r0-r12, lr}
+	bl buildString
+	pop {r0-r12, lr}
 
-	// If it's a null, head back now
+	// If it's a null, head return now
 	cmp r3, #0
 	bxeq lr
 
+	// call handlePushingSymbol to push the symbol into the stack
 	push {r0-r12, lr}
 	mov r7, r3
 	bl handlePushingSymbol
 	pop {r0-r12, lr}
 
-    mov r4, #0
-    bx lr
+	mov r4, #0
+	bx lr
 
 // Expected r7 to be the symbol
 handlePushingSymbol:
@@ -208,9 +209,9 @@ buildString:
 	// If the string length is 0, return immediately
 	cmp r4, #1
 	bxeq lr
-    push {r0-r12, lr}
+	push {r0-r12, lr}
 
-    // Copy the given number to a new point in memory
+	// Copy the given number to a new point in memory
 	// Make memory for the string
 	mov r0, r4
 
@@ -218,13 +219,13 @@ buildString:
 	bl malloc
 	pop {r1-r12, lr}
 
-    add r1, r1, r2
-    sub r1, r1, r4
-    mov r2, r4
-
 	// Copy into new memory space
+	add r1, r1, r2
+	sub r1, r1, r4
+	mov r2, r4
+
 	push {r0-r12, lr}
-    bl memcpy
+	bl memcpy
 	pop {r0-r12, lr}
 
 	// Null terminate the string
@@ -242,6 +243,7 @@ buildString:
 	bx lr
 
 finalizePostfix:
+	// While the stack is not empty, pop from the stack and push to the queue.
 	bl stackEmpty
 	beq solveExpression
 
@@ -295,7 +297,9 @@ solveExpression:
 
 solveExpression1:
 	// If we're here, it means that this is an operator
-	// so we must solve the operator
+	// so we must solve the operator.
+	// Determine what operator it is then call the
+	// respective function.
 
 	// DEBUG: Print out the operator
 	push {r0-r12, lr}
@@ -303,33 +307,34 @@ solveExpression1:
 	ldr r0, =charNoLF
 	bl printf
 	pop {r0-r12, lr}
-	
+
 	push {r0-r12, lr}
-    cmp r0, #94
-    bleq exponent
+	cmp r0, #94
+	bleq exponent
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r0, #47
-    bleq divide
+	cmp r0, #47
+	bleq divide
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r0, #42
-    bleq multiply
+	cmp r0, #42
+	bleq multiply
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r0, #45
-    bleq subtract
+	cmp r0, #45
+	bleq subtract
 	pop {r0-r12, lr}
 	
 	push {r0-r12, lr}
-    cmp r0, #43
-    bleq add
+	cmp r0, #43
+	bleq add
 	pop {r0-r12, lr}
 	b solveExpression
 
+// Adds the top 2 values on the stack
 add:
 	push {r12, lr}
 	bl stackPop
@@ -345,6 +350,7 @@ add:
 	pop {r12, lr}
 	bx lr	
 
+// Subtracts the top 2 values on the stack
 subtract:
 	push {r12, lr}
 	bl stackPop
@@ -360,6 +366,7 @@ subtract:
 	pop {r12, lr}
 	bx lr	
 
+// Multiplies the top 2 values on the stack
 multiply:
 	push {r12, lr}
 	bl stackPop
@@ -375,6 +382,7 @@ multiply:
 	pop {r12, lr}
 	bx lr	
 
+// Divides the top 2 values on the stack
 divide:
 	push {r12, lr}
 	bl stackPop
@@ -390,8 +398,10 @@ divide:
 	pop {r12, lr}
 	bx lr	
 
+// Does the 2nd to top value on the stack to the power
+// of the top value on the stack.
 exponent:
-    // Use the c stdlib.h pow function
+	// Use the c stdlib.h pow function
 	push {r12, lr}
 
 	bl stackPop
@@ -399,6 +409,8 @@ exponent:
 
 	bl stackPop
 	vldr d1, [r0]
+
+	// Save a point to this float struct for later use
 	mov r8, r0
 
 	// Move the doubles into registers to call the c pow function.
@@ -412,6 +424,7 @@ exponent:
 	// Move it back into the float register
 	vmov d0, r0, r1
 
+	// Store it back into a float struct and push it onto the stack
 	vstr d0, [r8]
 	mov r0, r8
 	bl stackPush
@@ -457,7 +470,7 @@ stackPop:
 	ldr r2, [r1]
 
 	// Load in the value to return
-    ldr r0, [r2]
+	ldr r0, [r2]
 
 	// Get pointer to head->next
 	add r2, r2, #8
@@ -584,10 +597,10 @@ precedence:
 // precedenceNum returns a numerical representation
 // for the precedence in r0 in r0.
 //
-// +- 1
-// */ 2
-// ^ 3
-// () 0
+// () returns 0
+// +- returns 1
+// */ returns 2
+// ^ returns 3
 precedenceNum:
 	cmp r0, #43 // +
 	moveq r0, #1
@@ -621,13 +634,20 @@ precedenceNum:
 	bx lr
 
 finalPrint:
+	// Get the value at the top of the stack
 	bl stackPop
 	vldr d0, [r0]
+
+	// Move it into r2, r3 for printing with printf
 	vmov r2, r3, d0
 	ldr r0, =float
+
+	// Print with printf
 	push {r0-r12, lr}
 	bl printf
 	pop {r0-r12, lr}
+
+	// Quit
 	b end
 
 end:
