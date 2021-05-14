@@ -13,7 +13,7 @@ Output:
 
 ``` 2 2 + 2 + 2 + 2 + 0.5 - 1.5 - 2 / 0.5 * 5 ^  ``` --> this is the expression in postfix notation
 
-``` 32.000000 ``` --> this is the final answer
+``` 32 ``` --> this is the final answer
 
 Note:
 - negative numbers are NOT supported
