@@ -2,12 +2,12 @@
 # Purpose / Goal
 A basic calculator that takes into account the standard "PEMDAS" rule. 
 # Usage
-``` $> jag3.out <operation> ```  
+``` $> ./jag3.out <operation> ```  
 where operation is defined as:
 ``` operation = <operand> <arithmetic operation> <operand> , ... ```
   
 For Example: 
-``` $> jag3.out "((2+2+2+2+2-0.5-1.5)/2*0.5)^5" ```
+``` $> ./jag3.out "((2+2+2+2+2-0.5-1.5)/2*0.5)^5" ```
 
 Output:
 
