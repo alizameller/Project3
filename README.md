@@ -28,5 +28,5 @@ make
 ```
 
 # Design Document
-The Design document can be found [here]([Design Document - Project #3.pdf](https://github.com/alizameller/Project3/files/6476386/Design.Document.-.Project.3.pdf)
+The Design document can be found [here](https://github.com/alizameller/Project3/files/6476386/Design.Document.-.Project.3.pdf)
 
