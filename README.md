@@ -28,4 +28,5 @@ make
 ```
 
 # Design Document
-The Design document can be found [here](https://cooperunion-my.sharepoint.com/:w:/g/personal/aliza_meller_cooper_edu/EQxlyZTsLDBDncoUJjVM430B47V6FMSasxTC2jTI3mmsPw?e=fhFgLr)
+The Design document can be found [here]([Design Document - Project #3.pdf](https://github.com/alizameller/Project3/files/6476386/Design.Document.-.Project.3.pdf)
+
