@@ -7,7 +7,16 @@ where operation is defined as:
 ``` operation = <operand> <arithmetic operation> <operand> , ... ```
   
 For Example: 
-``` $> jag3.out 3+2+3*3/3^3 ```
+``` $> jag3.out "((2+2+2+2+2-0.5-1.5)/2*0.5)^5" ```
+Output:
+``` 2 2 + 2 + 2 + 2 + 0.5 - 1.5 - 2 / 0.5 * 5 ^  ``` 
+``` 32.000000 ```
+
+Note:
+- negative numbers are NOT supported
+- floats ARE supported
+- expression must be wrapped in double quotes (")
+- there cannot be any spaces between characters in the argument
 
 # Installation Method
 1. Download the assembly file from GitHub using curl:
