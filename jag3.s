@@ -173,6 +173,7 @@ handlePushingSymbol:
 	bl queuePush
 	pop {r7, lr}
 
+	b handlePushingSymbol
 
 handlePushingSymbol1:
 	// push on the remaining character
