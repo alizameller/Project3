@@ -8,8 +8,10 @@ where operation is defined as:
   
 For Example: 
 ``` $> jag3.out "((2+2+2+2+2-0.5-1.5)/2*0.5)^5" ```
+
 Output:
 ``` 2 2 + 2 + 2 + 2 + 0.5 - 1.5 - 2 / 0.5 * 5 ^  ``` 
+
 ``` 32.000000 ```
 
 Note:
